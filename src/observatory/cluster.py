@@ -1,4 +1,4 @@
-"""Spherical k-means over trajectory vectors, with k chosen by reproducibility and names from centroids.
+"""Spherical k-means over trajectories, with k chosen by reproducibility, named from centroids.
 
 Written out rather than imported because the interesting parts are the parts a library would hide:
 which distance, how k is chosen, what happens to points that belong to nothing, and how a cluster

@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-from .attribution import PriceTable, aggregate
+from .attribution import PriceTable
 from .corpus import BASELINE_WEIGHTS, load_labels, shifted_weights, write_corpus
 from .otlp import post_otlp, write_otlp
 from .pipeline import analyse, load_trajectories, persist
@@ -15,7 +15,7 @@ from .regression import compare_populations
 from .report import write_report
 from .spans import Status
 from .store import Store
-from .validate import evaluate_clustering, evaluate_detectors
+from .validate import evaluate_detectors
 
 DEFAULT_DB = Path("obs_data/observatory.db")
 

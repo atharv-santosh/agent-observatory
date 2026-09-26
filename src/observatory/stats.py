@@ -99,7 +99,8 @@ def compare_proportions(k_a: int, n_a: int, k_b: int, n_b: int, *, n_permutation
         rr_ci=rr_ci, diff=rate_b - rate_a, diff_ci=diff_ci, n_permutations=n_permutations)
 
 
-def benjamini_hochberg(p_values: list[float], alpha: float = 0.05) -> tuple[list[float], list[bool]]:
+def benjamini_hochberg(p_values: list[float],
+                       alpha: float = 0.05) -> tuple[list[float], list[bool]]:
     """BH step-up: returns (adjusted p-values, rejected flags) in the input order."""
     m = len(p_values)
     if m == 0:

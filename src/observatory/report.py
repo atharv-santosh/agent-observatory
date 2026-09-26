@@ -51,7 +51,7 @@ def _stats(pairs: list[tuple[str, str]]) -> str:
 
 
 def _merge_summary(merge_tree: list[list[Any]]) -> str:
-    return " | ".join("c{:02d}+c{:02d} at {:.2f}".format(int(a), int(b), float(d))
+    return " | ".join(f"c{int(a):02d}+c{int(b):02d} at {float(d):.2f}"
                       for a, b, d in merge_tree[:6])
 
 

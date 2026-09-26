@@ -1,8 +1,8 @@
 """Detectors for six named pathologies, each with the evidence that made it fire.
 
-These are the opposite of the clustering: hand-specified rules for failures that already have names.
-They are here because a derived taxonomy tells you what is going wrong at population level, and a
-detector tells you why this particular run did it, and the two answers are worth having side by side.
+These are the opposite of the clustering: hand-specified rules for failures that already have
+names. A derived taxonomy tells you what is going wrong at population level; a detector tells you
+why this particular run did it. Both answers are worth having side by side.
 
 Every detector returns the evidence that triggered it, because a detector you cannot audit is a
 detector whose precision you cannot measure, and precision is the only number that makes one of
@@ -167,7 +167,7 @@ def detect_premature_termination(facts: RunFacts, *, completion_floor: float = 0
 
 
 def detect_hallucinated_tool_args(facts: RunFacts) -> Finding | None:
-    """A call the advertised schema does not allow: wrong tool, wrong key, wrong type, invented id."""
+    """A call the schema does not allow: wrong tool, wrong key, wrong type, or an invented id."""
     if not facts.advertised_tools:
         return None
     violations: list[dict[str, Any]] = []
@@ -262,11 +262,11 @@ def detect_context_exhaustion(facts: RunFacts, *, growth: float = 4.0,
                               assumed_limit: int = 16_000) -> Finding | None:
     """The prompt growing every turn until something gives.
 
-    The first version fired on growth ratio alone, which is useless: every multi-turn agent's prompt
-    grows several-fold because history accumulates, so the detector ran at 0.42 precision. Exhaustion
-    is about approaching a limit, not about growing, so an absolute size floor is required. When the
-    run declares its context window that floor comes from the declaration; otherwise a conservative
-    assumed window is used and the finding records that it was assumed.
+    The first version fired on growth ratio alone, which is useless: every multi-turn agent's
+    prompt grows several-fold as history accumulates, and the detector ran at 0.42 precision.
+    Exhaustion is about approaching a limit, not about growing, so an absolute size floor is
+    required. When the run declares its context window that floor comes from the declaration;
+    otherwise a conservative window is assumed and the finding records that it was assumed.
     """
     prompts = [c.tokens_in for c in facts.llm_calls if c.tokens_in]
     if len(prompts) < 4:

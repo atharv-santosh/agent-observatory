@@ -39,6 +39,10 @@ def from_sandbox_scenario(path: Path) -> list[Trajectory]:
     """Synthesise event streams from an agent-sandbox scenario result file."""
     doc = json.loads(path.read_text())
     scenario = str(doc.get("scenario_id") or path.stem)
+    # agent-sandbox stores the same scenario ids under one directory per model configuration, so
+    # the scenario id alone is not a run id: without the directory, six configurations of the same
+    # scenario collapse into one run and five sixths of the corpus disappears silently.
+    config = path.parent.name
     category = doc.get("category")
     model = doc.get("model")
     elapsed = float(doc.get("elapsed_seconds") or 0.0)
@@ -49,7 +53,7 @@ def from_sandbox_scenario(path: Path) -> list[Trajectory]:
         if not isinstance(body, dict):
             continue
         calls = [c for c in body.get("calls", []) if isinstance(c, dict)]
-        run_id = f"sandbox:{scenario}:{branch}"
+        run_id = f"sandbox:{config}:{scenario}:{branch}"
         events: Trajectory = []
         ts = 0.0
         # Budget the recorded wall clock across the calls so durations are not all zero.
@@ -58,7 +62,8 @@ def from_sandbox_scenario(path: Path) -> list[Trajectory]:
 
         events.append(_ev(run_id, seq, ts, "run_start", {
             "source": "agent-sandbox", "scenario": scenario, "category": category,
-            "branch": branch, "model": model, "is_benign": bool(doc.get("is_benign")),
+            "branch": branch, "model": model, "config": config,
+            "is_benign": bool(doc.get("is_benign")),
             "step": 0,
         }))
         seq += 1

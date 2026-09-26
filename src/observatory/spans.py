@@ -10,19 +10,19 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from .events import Event, model_name, tool_name, usage_tokens
 
 
-class SpanKind(str, Enum):
+class SpanKind(StrEnum):
     INTERNAL = "SPAN_KIND_INTERNAL"
     CLIENT = "SPAN_KIND_CLIENT"
     SERVER = "SPAN_KIND_SERVER"
 
 
-class Status(str, Enum):
+class Status(StrEnum):
     UNSET = "STATUS_CODE_UNSET"
     OK = "STATUS_CODE_OK"
     ERROR = "STATUS_CODE_ERROR"

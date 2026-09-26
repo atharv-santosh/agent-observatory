@@ -58,7 +58,8 @@ def deterministic_summary(cluster: dict[str, Any]) -> str:
     """A summary derived from the centroid alone, which is what the tests and the report use."""
     fragments = [n.split("/", 1)[-1] for n, _ in cluster["top_features"][:4]]
     quality = cluster.get("quality") or {}
-    parts = [f"{cluster['size']} runs sharing {', '.join(fragments) or 'no distinguishing feature'}",
+    shared = ", ".join(fragments) or "no distinguishing feature"
+    parts = [f"{cluster['size']} runs sharing {shared}",
              f"named {cluster['name']!r} from its own centroid",
              f"internal cohesion {cluster['cohesion']:.2f}"]
     if quality:
@@ -70,7 +71,7 @@ def deterministic_summary(cluster: dict[str, Any]) -> str:
 
 def summarise_cluster(store: Store, cluster: dict[str, Any], *, model: str = "gemini-2.5-flash",
                       offline: bool = False) -> str:
-    """Narrate a cluster. Falls back to the deterministic summary whenever a model is unavailable."""
+    """Narrate a cluster, falling back to the deterministic summary if no model is reachable."""
     evidence = build_evidence(store, cluster)
     baseline = deterministic_summary(cluster)
     if offline:

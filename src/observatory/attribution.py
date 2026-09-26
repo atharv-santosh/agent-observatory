@@ -137,7 +137,7 @@ def attribute(trace: Trace, prices: PriceTable | None = None) -> RunAttribution:
         )
 
     # Roll up deepest-first so a parent always sees finished children.
-    for depth, span in sorted(walk, key=lambda ds: -ds[0]):
+    for _depth, span in sorted(walk, key=lambda ds: -ds[0]):
         sc = costs[span.span_id]
         sc.incl_tokens_in = sc.tokens_in
         sc.incl_tokens_out = sc.tokens_out

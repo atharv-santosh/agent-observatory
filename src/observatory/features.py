@@ -213,7 +213,8 @@ def featurize(facts: RunFacts) -> RawFeatures:
         "tokens_in_total": float(facts.tokens_in),
         "tokens_out_total": float(facts.tokens_out),
         "max_prompt_tokens": float(max(prompts, default=0)),
-        "prompt_growth_ratio": (prompts[-1] / prompts[0]) if len(prompts) > 1 and prompts[0] else 1.0,
+        "prompt_growth_ratio": ((prompts[-1] / prompts[0])
+                                if len(prompts) > 1 and prompts[0] else 1.0),
         "cap_finish_ratio": cap_finishes / (len(facts.llm_calls) or 1),
         "truncation_markers": float(facts.truncation_markers),
         "mean_output_tokens": (sum(outputs) / len(outputs)) if outputs else 0.0,
