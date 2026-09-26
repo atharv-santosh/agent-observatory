@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>agent-observatory</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header>
+  <h1>agent-observatory</h1>
+  <nav>
+    <button data-view="runs" aria-selected="true">Runs</button>
+    <button data-view="clusters" aria-selected="false">Clusters</button>
+    <button data-view="cost" aria-selected="false">Cost</button>
+    <button data-view="validation" aria-selected="false">Validation</button>
+    <button data-view="regression" aria-selected="false">Regression</button>
+  </nav>
+  <span id="head-stat" class="muted" style="margin-left:auto"></span>
+</header>
+
+<main>
+  <section id="view-runs">
+    <div class="controls">
+      <input id="f-q" type="search" placeholder="run id" size="18">
+      <select id="f-cluster"></select>
+      <select id="f-cohort"></select>
+      <select id="f-pathology"></select>
+      <select id="f-order">
+        <option value="cost">cost</option>
+        <option value="duration">duration</option>
+        <option value="events">events</option>
+        <option value="errors">errors</option>
+        <option value="run_id">run id</option>
+      </select>
+      <span id="runs-count" class="muted"></span>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>run</th><th>status</th><th class="n">events</th><th class="n">tools</th>
+        <th class="n">tokens</th><th class="n">cost</th><th class="n">ms</th>
+        <th>cluster</th><th>detectors</th></tr></thead>
+      <tbody id="runs-body"></tbody>
+    </table></div>
+  </section>
+
+  <section id="view-run" hidden>
+    <div class="controls">
+      <button class="act" id="back">back</button>
+      <h2 id="run-title"></h2>
+    </div>
+    <div id="run-stats"></div>
+    <div id="run-findings"></div>
+    <h3>Span tree</h3>
+    <div class="tree" id="run-tree"></div>
+    <div id="span-detail"></div>
+  </section>
+
+  <section id="view-clusters" hidden>
+    <div class="map" id="cluster-map" style="height:340px"></div>
+    <div class="scroll"><table>
+      <thead><tr><th>cluster</th><th>name</th><th class="n">runs</th><th class="n">cohesion</th>
+        <th>dominant label</th><th>centroid features</th></tr></thead>
+      <tbody id="clusters-body"></tbody>
+    </table></div>
+    <div id="cluster-detail"></div>
+  </section>
+
+  <section id="view-cost" hidden><div id="cost-body"></div></section>
+  <section id="view-validation" hidden><div id="validation-body"></div></section>
+  <section id="view-regression" hidden><div id="regression-body"></div></section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

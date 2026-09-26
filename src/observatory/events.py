@@ -140,6 +140,9 @@ def usage_tokens(event: Event) -> tuple[int, int]:
     """Extract (input, output) token counts from an llm_result under any of the known shapes."""
     if event.type != "llm_result":
         return (0, 0)
+    # Ordered by specificity, and both keys must be present: the first version matched on either
+    # key, so a Gemini-shaped payload carrying prompt_tokens/candidates_tokens matched the OpenAI
+    # pair on its input key alone and reported every completion as zero output tokens.
     candidates = [
         ("prompt_tokens", "completion_tokens"),
         ("prompt_tokens", "candidates_tokens"),
@@ -152,6 +155,9 @@ def usage_tokens(event: Event) -> tuple[int, int]:
                    default={}) or {}):
         if not isinstance(holder, dict):
             continue
+        for in_key, out_key in candidates:
+            if in_key in holder and out_key in holder:
+                return (int(holder.get(in_key) or 0), int(holder.get(out_key) or 0))
         for in_key, out_key in candidates:
             if in_key in holder or out_key in holder:
                 return (int(holder.get(in_key) or 0), int(holder.get(out_key) or 0))

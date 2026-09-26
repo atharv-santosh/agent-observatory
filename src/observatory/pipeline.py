@@ -207,6 +207,7 @@ def persist(analysis: Analysis, store: Store, *, trajectories: dict[str, list[Ev
     store.put_aggregate("attribution", "population",
                         aggregate(list(analysis.attributions.values())))
     store.put_aggregate("cluster", "sweep", analysis.clustering.sweep)
+    store.put_aggregate("cluster", "stability_sweep", analysis.clustering.stability_sweep)
     store.put_aggregate("cluster", "merge_tree", analysis.clustering.merge_tree)
     store.put_aggregate("cluster", "noise", analysis.clustering.noise[:500])
     pathology_counts: dict[str, int] = {}

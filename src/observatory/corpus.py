@@ -219,7 +219,9 @@ class Generator:
         label = RunLabel(run_id=run_id, mode=mode, cohort=self.cohort, task=task, model=model)
         builder = getattr(self, f"_mode_{mode}")
         builder(w, rng, tools, terminal, n_steps, model, label)
-        self._maybe_incidental(w, rng, tools, model, label)
+        next_step = 1 + max((e["payload"].get("step", 0) for e in w.events
+                             if isinstance(e["payload"].get("step"), int)), default=0)
+        self._maybe_incidental(w, rng, tools, model, label, next_step)
         return w.events, label
 
     # --- shared building blocks -------------------------------------------------------------
@@ -416,12 +418,11 @@ class Generator:
     # --- incidental noise ------------------------------------------------------------------
 
     def _maybe_incidental(self, w: _Writer, rng: random.Random, tools: list[str], model: str,
-                          label: RunLabel) -> None:
+                          label: RunLabel, step: int) -> None:
         """Occasionally add a second, truthfully-labelled pathology on top of the planted mode."""
         if rng.random() > 0.08:
             return
         kind = rng.choice(("retry", "truncation"))
-        step = 900
         if kind == "retry":
             tool = rng.choice(tools)
             args = _tool_args(tool, rng, step)
