@@ -15,13 +15,13 @@ that never enters the event stream, and scores the clusterer against it.
 
 ## The measured numbers
 
-Cluster purity against the planted ground truth is **0.887** at k=11, with inverse purity 0.868,
+Cluster purity against the planted ground truth is 0.887 at k=11, with inverse purity 0.868,
 adjusted Rand 0.821 and 3.6% of runs left unclustered. No cluster fell below 50% dominant label
 share. Four of the ten planted modes were recovered exactly; `arg_hallucination` is the weak point at
 55.4% spread over three clusters, and `slow_tool` is not recovered at all because a run whose only
 distinguishing feature is one slow tool call is structurally a healthy run.
 
-Detector precision across the six named pathologies runs from **0.854** (oscillation, 27 false
+Detector precision across the six named pathologies runs from 0.854 (oscillation, 27 false
 positives in 185 firings) to 1.000 (silent truncation, premature termination, hallucinated tool
 arguments, context exhaustion), with retry loops at 0.985.
 
