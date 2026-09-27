@@ -260,13 +260,18 @@ def _refine(x: np.ndarray, idx: np.ndarray, depth: int, *, max_depth: int, min_s
             min_gain: float, seed: int, out: list[np.ndarray]) -> None:
     """Split a cluster in two while the split is clean enough to be worth having.
 
-    The flat partition and the taxonomy people want are not the same object. Left to itself the
-    criterion picks a coarse k, because a large tight healthy population is geometrically the best
-    thing in the data and silhouette rewards it, and the rare failure modes get absorbed. Splitting
-    only where there is clear internal substructure resolves them without dragging the whole
-    taxonomy finer: on a 3,600-run corpus this raises purity from 0.750 to 0.846 while inverse
-    purity only falls from 0.984 to 0.953, where forcing flat k up to 9 to get similar purity drops
-    inverse purity to 0.794.
+    The flat partition and the taxonomy people want are not always the same object. When the
+    selection criterion undershoots, a large tight healthy population is geometrically the best
+    thing in the data and the rare failure modes get absorbed into one catch-all. Splitting only
+    where a cluster shows clear internal substructure resolves them without dragging the whole
+    taxonomy finer.
+
+    How much this is worth depends entirely on where the criterion landed. On a pooled two-cohort
+    corpus where it chose k=5 it took purity from 0.750 to 0.846 with inverse purity only falling
+    from 0.984 to 0.953, against 0.794 for forcing flat k to 9 instead. On the single-cohort corpus
+    in MEASUREMENTS.md, where the criterion already chooses k=10, it adds one cluster and changes
+    nothing that matters (purity 0.888 to 0.887, ARI 0.829 to 0.821). It is on by default because
+    the failure it prevents is much worse than the cluster it occasionally adds for nothing.
     """
     if depth >= max_depth or idx.size < min_size * 2:
         out.append(idx)
@@ -306,11 +311,14 @@ def cluster(x: np.ndarray, run_ids: list[str], column_names: list[str], *,
             stab = (subsample_stability(x, candidate, reps=stability_reps, seed=seed)
                     if select != "silhouette" else 0.0)
             rows.append((candidate, sil, stab))
-        # Silhouette times stability: a k has to produce compact clusters and produce the same ones
-        # again on a different subsample. Measured against four corpus seeds whose ground truth is
-        # known, this picks a k with mean ARI 0.812 where silhouette alone gets 0.795 and stability
-        # alone 0.716 (the oracle choice is 0.852). Silhouette alone slides to k=5 and merges the
-        # rare modes; stability alone rewards coarse taxonomies for the same reason.
+        # Silhouette times stability: a k has to make compact clusters and make the same ones again
+        # on a different subsample. Measured against four corpus seeds with known ground truth, the
+        # product picks a k with mean ARI 0.768 against an oracle 0.785, and stability alone manages
+        # only 0.598. Silhouette alone also reaches 0.768 there, agreeing with the product on all
+        # four seeds, so on this corpus the stability term mostly acts as a guard that costs
+        # nothing rather than as a tiebreaker doing visible work. It is kept because the case it
+        # guards against, a compact partition that does not reproduce, is the one that would
+        # silently produce a taxonomy nobody could trust.
         if select == "silhouette":
             k = max(rows, key=lambda r: r[1])[0]
         elif select == "stability":

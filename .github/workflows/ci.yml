@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Create venv and install
+        run: |
+          uv venv --python ${{ matrix.python-version }} .venv
+          source .venv/bin/activate
+          uv pip install -e ".[dev,web]"
+
+      - name: Lint
+        run: uvx ruff check src tests demo
+
+      - name: Run the test suite
+        # No credentials are set anywhere in this workflow, on purpose: the whole point is that
+        # the analysis runs on recorded trajectories, so if anything in here needed a key the
+        # suite would fail here rather than quietly in six months.
+        run: |
+          source .venv/bin/activate
+          python -m pytest -q --timeout=600
+
+      - name: End to end, the same commands the README gives
+        run: |
+          source .venv/bin/activate
+          obs gen ci-corpus -n 400 --seed 5 --with-regression
+          obs --db ci.db analyse ci-corpus/runs \
+            --labels ci-corpus/labels/before.json \
+            --labels ci-corpus/labels/after.json
+          obs --db ci.db clusters -v
+          obs --db ci.db runs --limit 5
+          obs --db ci.db cost
+          obs --db ci.db report --out out/report.html
+          obs --db ci.db export --out out/traces.otlp.json --limit 50
+          obs --db ci.db regress ci-corpus/runs --permutations 2000
+          obs validate ci-corpus/runs \
+            --labels ci-corpus/labels/before.json \
+            --labels ci-corpus/labels/after.json \
+            --json out/validation.json
+          obs --db ci.db summarise c00 --offline
+
+      - name: The report must not reach the network
+        run: |
+          source .venv/bin/activate
+          python - <<'PY'
+          from pathlib import Path
+          from observatory.report import report_assets_are_local
+          html = Path("out/report.html").read_text()
+          assert report_assets_are_local(html), "the report references something external"
+          assert "@font-face" not in html and "<link" not in html
+          print(f"report is self-contained, {len(html):,} bytes")
+          PY
+
+      - name: The web app must serve every screen on localhost
+        run: |
+          source .venv/bin/activate
+          obs --db ci.db serve --port 8799 &
+          for _ in $(seq 1 40); do
+            curl -fsS http://127.0.0.1:8799/api/overview > /dev/null && break
+            sleep 0.5
+          done
+          for path in / /static/styles.css /static/app.js /api/overview /api/clusters \
+                      '/api/runs?limit=5'; do
+            curl -fsS "http://127.0.0.1:8799$path" > /dev/null
+            echo "ok $path"
+          done
+          run_id=$(curl -fsS 'http://127.0.0.1:8799/api/runs?limit=1' \
+            | python -c 'import json,sys; print(json.load(sys.stdin)[0]["run_id"])')
+          curl -fsS "http://127.0.0.1:8799/api/runs/$run_id" > /dev/null
+          echo "ok /api/runs/$run_id"
+          kill %1
+
+      - name: Upload the report and the validation numbers
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: |
+            out/report.html
+            out/validation.json

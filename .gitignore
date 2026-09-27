@@ -7,3 +7,6 @@ __pycache__/
 .DS_Store
 obs_data/
 out/
+corpus/
+ci-corpus/
+ci.db
