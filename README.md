@@ -1,4 +1,4 @@
-# agent-observatory
+# Agent Observatory
 
 Observability across populations of agent runs, with the failure taxonomy derived
 from the data instead of guessed up front.
